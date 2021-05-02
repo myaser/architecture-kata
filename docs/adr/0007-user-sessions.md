@@ -18,4 +18,3 @@ With the presence of multiple roles. Role based access system needs to be in pla
 ### Positive Consequences
 
 * Handling authentication/authorization of all users in a single component make it easier to maintain
-
