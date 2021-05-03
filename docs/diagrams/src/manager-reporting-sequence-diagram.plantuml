@@ -1,0 +1,93 @@
+@startuml View Live Reports
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor Manager
+participant "Manager UI" as UI
+participant "User sessions" as sessions
+participant "Reporting" as reporting
+database "reporting database" as db
+
+Manager -> UI
+UI -> sessions: authenticate
+activate sessions
+UI <-- sessions
+UI -> sessions: view live reports
+sessions -> reporting
+activate reporting
+reporting -> reporting: process inquiry
+reporting -> db: query reporting database
+activate db
+reporting <-- db
+deactivate db
+sessions <-- reporting: results
+deactivate reporting
+
+UI <-- sessions: 
+deactivate sessions
+UI -> Manager: show results
+
+@enduml
+
+--
+
+@startuml build financial reports tables
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+queue "payment request" as PReq
+queue "payment result" as PRes
+queue "subscription created/renewed" as sub
+queue "reporting event" as RE
+participant "reporting adapter" as RA
+database "reporting database" as db
+
+PReq -> RE: clone for reporting
+PRes -> RE: clone for reporting
+sub -> RE: clone for reporting
+RE -> RA: read events
+activate RA
+RA -> RA: transform
+RA -> db: persist data
+activate db
+RA <-- db
+deactivate db
+
+@enduml
+
+
+--
+
+@startuml build operational reports data
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+queue "ticket created" as TC
+queue "ticket assigned" as TA
+queue "ticket appointment confirmed" as TA
+queue "ticket closed" as TD
+queue "survey filled" as SF
+queue "knowledge base search query" as KN
+queue "reporting event" as RE
+participant "reporting adapter" as RA
+database "reporting database" as db
+
+TC -> RE: clone for reporting
+TA -> RE: clone for reporting
+TD -> RE: clone for reporting
+SF -> RE: clone for reporting
+KN -> RE: clone for reporting
+RE -> RA: read events
+activate RA
+RA -> RA: transform
+RA -> db: persist data
+activate db
+RA <-- db
+deactivate db
+
+@enduml
+
+--
