@@ -91,6 +91,8 @@ database "search index" as idx
 participant "ticket service" as ticket
 database "ticket database" as db
 queue "Results" as resQueue
+participant "expert profile" as expertProfile
+database "experts database" as expertDB
 participant "survey" as survey
 database "survey database" as surveyDB
 queue "notify" as notify
@@ -133,6 +135,14 @@ sessions <<- resQueue: push results
 mob <- sessions: push updates <request id=lorem ipsum>
 deactivate sessions
 mob -> expert: show results
+
+resQueue ->> expertProfile: filter ticket closed events
+activate expertProfile
+expertProfile -> expertDB: update expert schedule
+activate expertDB
+expertProfile <-- expertDB
+deactivate expertDB
+deactivate expertProfile
 
 resQueue ->> survey: filter ticket closed events
 activate survey

@@ -5,26 +5,21 @@ hide footbox
 
 actor Manager
 participant "Manager UI" as UI
-participant "User sessions" as sessions
-participant "Reporting" as reporting
+participant "Reporting (tableau)" as reporting
 database "reporting database" as db
 
 Manager -> UI
-UI -> sessions: authenticate
-activate sessions
-UI <-- sessions
-UI -> sessions: view live reports
-sessions -> reporting
+UI -> reporting: authenticate
 activate reporting
+UI <-- reporting
+UI -> reporting: view live reports
 reporting -> reporting: process inquiry
 reporting -> db: query reporting database
 activate db
 reporting <-- db
 deactivate db
-sessions <-- reporting: results
+UI <-- reporting: results
 deactivate reporting
-
-UI <-- sessions: 
 deactivate sessions
 UI -> Manager: show results
 
