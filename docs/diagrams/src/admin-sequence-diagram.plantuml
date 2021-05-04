@@ -1,0 +1,117 @@
+@startuml expert profile maintenance
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor Admin
+participant "Admin UI" as UI
+participant "User sessions" as sessions
+queue "Expert Maintenance Request" as reqQueue
+participant "Expert profile" as expert
+database "expert database" as db
+queue "Results" as resQueue
+
+Admin -> UI
+UI -> sessions: authenticate
+activate sessions
+UI <-- sessions
+UI -> sessions: CRUD on expert
+UI <-- sessions: request received <id=lorem ipsum>
+sessions -> reqQueue: expert profile maintenance request
+reqQueue ->> expert: read the event
+
+activate expert
+expert -> expert: process profile
+expert -> db: persist profile
+activate db
+expert <-- db
+deactivate db
+expert -> resQueue: publish results
+deactivate expert
+
+sessions <<- resQueue: push results
+UI <- sessions: push updates <request id=lorem ipsum>
+deactivate sessions
+UI -> Admin: show results
+
+@enduml
+
+--
+
+@startuml product maintenance
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor Admin
+participant "Admin UI" as UI
+participant "User sessions" as sessions
+queue "Product Maintenance Request" as reqQueue
+participant "Plans and Subscriptions" as plans
+database "plans database" as db
+queue "Results" as resQueue
+
+Admin -> UI
+UI -> sessions: authenticate
+activate sessions
+UI <-- sessions
+UI -> sessions: CRUD on support plans
+UI <-- sessions: request received <id=lorem ipsum>
+sessions -> reqQueue: product maintenance request
+reqQueue ->> plans: read the event
+
+activate plans
+plans -> plans: process product
+plans -> db: persist product
+activate db
+plans <-- db
+deactivate db
+plans -> resQueue: publish results
+deactivate plans
+
+sessions <<- resQueue: push results
+UI <- sessions: push updates <request id=lorem ipsum>
+deactivate sessions
+UI -> Admin: show results
+
+@enduml
+
+-- 
+
+@startuml ticket status inquiry
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor Admin
+participant "Admin UI" as UI
+participant "User sessions" as sessions
+queue "ticket status inquiry" as reqQueue
+participant "ticket" as ticket
+database "ticket database" as db
+queue "Results" as resQueue
+
+Admin -> UI
+UI -> sessions: authenticate
+activate sessions
+UI <-- sessions
+UI -> sessions: inquiry about ticket status
+UI <-- sessions: request received <id=lorem ipsum>
+sessions -> reqQueue: ticket status inquiry
+reqQueue ->> ticket: read the event
+
+activate ticket
+ticket -> ticket: process inquiry
+ticket -> db: query ticket database
+activate db
+ticket <-- db
+deactivate db
+ticket -> resQueue: publish results
+deactivate ticket
+
+sessions <<- resQueue: push results
+UI <- sessions: push updates <request id=lorem ipsum>
+deactivate sessions
+UI -> Admin: show results
+
+@enduml

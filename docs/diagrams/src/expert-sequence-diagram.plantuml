@@ -1,0 +1,158 @@
+@startuml expert access to tickets
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor expert
+participant "mobile app" as mob
+participant "User sessions" as sessions
+queue "Ticket Read Request" as reqQueue
+participant "ticket service" as ticket
+database "ticket database" as db
+queue "Results" as resQueue
+
+expert -> mob
+mob -> sessions: authenticate
+activate sessions
+mob <-- sessions
+mob -> sessions: list tickets
+mob <-- sessions: request received <id=lorem ipsum>
+sessions -> reqQueue: list my tickets request
+reqQueue ->> ticket: read the event
+
+activate ticket
+ticket -> ticket: process request
+ticket -> db: retreive ticket
+activate db
+ticket <-- db
+deactivate db
+ticket -> resQueue: publish results
+deactivate ticket
+
+sessions <<- resQueue: push results
+mob <- sessions: push updates <request id=lorem ipsum>
+deactivate sessions
+mob -> expert: show results
+
+@enduml
+
+--
+@startuml expert access knowledge base
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor expert
+participant "mobile app" as mob
+participant "User sessions" as sessions
+queue "knowledge base search query" as reqQueue
+participant "knowledge base search engine" as search
+database "search index" as db
+queue "Results" as resQueue
+
+expert -> mob
+mob -> sessions: authenticate
+activate sessions
+mob <-- sessions
+mob -> sessions: search in knowledge base
+mob <-- sessions: request received <id=lorem ipsum>
+sessions -> reqQueue: find similar problem
+reqQueue ->> search: read the event
+
+activate search
+search -> search: process query
+search -> db: retreive 
+activate db
+search <-- db
+deactivate db
+search -> resQueue: publish results
+deactivate search
+
+sessions <<- resQueue: push results
+mob <- sessions: push updates <request id=lorem ipsum>
+deactivate sessions
+mob -> expert: show results
+
+@enduml
+
+--
+
+@startuml expert closes a ticket
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor expert
+participant "mobile app" as mob
+participant "User sessions" as sessions
+queue "Ticket close Request" as reqQueue
+participant "knowledge base search engine" as search
+database "search index" as idx
+participant "ticket service" as ticket
+database "ticket database" as db
+queue "Results" as resQueue
+participant "survey" as survey
+database "survey database" as surveyDB
+queue "notify" as notify
+participant "notification" as notification
+database "notification preferences" as notifyDB
+actor customer
+
+
+expert -> mob
+mob -> sessions: authenticate
+activate sessions
+mob <-- sessions
+mob -> sessions: close ticket filling a report
+mob <-- sessions: request received <id=lorem ipsum>
+sessions -> reqQueue: list my tickets request
+
+par knowledge base and ticket service working in parallel
+reqQueue ->> search: read event
+activate search
+search -> search: process report
+search -> idx: persist report 
+activate idx
+search <-- idx
+deactivate idx
+search -> resQueue: publish results
+deactivate search
+
+
+reqQueue ->> ticket: read the event
+activate ticket
+ticket -> ticket: update ticket
+ticket -> db: persist ticket
+activate db
+ticket <-- db
+deactivate db
+ticket -> resQueue: publish results
+deactivate ticket
+end par
+sessions <<- resQueue: push results
+mob <- sessions: push updates <request id=lorem ipsum>
+deactivate sessions
+mob -> expert: show results
+
+resQueue ->> survey: filter ticket closed events
+activate survey
+survey -> surveyDB: create a survey for this ticket
+activate surveyDB
+survey <-- surveyDB
+deactivate surveyDB
+
+survey -> notify: notify customer of survey
+deactivate survey
+
+notify ->> notification: read event
+activate notification
+notification -> notifyDB: lookup user notification preferences
+activate notifyDB
+notification <-- notifyDB
+deactivate notifyDB
+notification -> customer: inform of a new survey
+deactivate notification
+@enduml
+
+--
+
