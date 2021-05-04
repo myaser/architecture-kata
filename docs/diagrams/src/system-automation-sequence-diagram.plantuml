@@ -1,0 +1,54 @@
+@startuml automatic billing
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+participant "Support plans and subscriptions" as subscriptions
+database "plans and subscriptions" as plansDB
+queue "subscription created/renewed" as subQueue
+participant "payment information" as paymentInfo
+database "customer payment info" as paymentInfoDB
+queue "payment request" as paymentQueue
+participant "payments" as payments
+participant "payments gateway" as PG
+queue "payment result" as paymentRes
+queue "results queue" as resQueue
+
+activate subscriptions
+subscriptions -> plansDB: fetch subscriptions that needs to be renewed
+activate plansDB
+subscriptions <-- plansDB
+deactivate plansDB
+subscriptions -> subQueue: submit event
+deactivate subscriptions
+
+subQueue ->> paymentInfo: read event
+activate paymentInfo
+paymentInfo -> paymentInfoDB: get customer payment info
+activate paymentInfoDB
+paymentInfo <-- paymentInfoDB
+deactivate paymentInfoDB
+paymentInfo -> paymentInfo: attach payment information
+paymentInfo -> paymentQueue: send payment request
+deactivate paymentInfo
+
+paymentQueue ->> payments: read event
+activate payments
+payments -> PG
+activate PG
+payments <-- PG
+deactivate PG
+payments -> paymentRes: publish payment result
+deactivate payments
+
+subscriptions <<- paymentRes: read event
+activate subscriptions
+subscriptions -> plansDB: update subscriptions status
+activate plansDB
+subscriptions <-- plansDB
+deactivate plansDB
+subscriptions -> resQueue
+deactivate subscriptions
+
+
+@enduml
