@@ -1,0 +1,57 @@
+@startuml expert access to tickets
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor customer
+participant "Customer UI" as mob
+participant "Users/sessions" as sessions
+participant "Payment Informations" as pi
+participant "Notification"
+queue "Results" as resQueue
+queue "User Info Request" as userReqQueue
+queue "User Info Update" as userUpdQueue
+ 
+autoactivate on
+customer -> mob 
+mob -> sessions: authenticate
+activate sessions
+mob <-- sessions
+mob -> sessions: Show Profile Info
+mob <-- sessions: request received <id=123>
+sessions -> sessions: Fetch User General Profile Info
+mob <-- sessions: General Profile Info 
+sessions -> userReqQueue: Get User Profile
+pi <- userReqQueue: Get Payment Info
+resQueue <- pi: User Payment Info
+notification <- userReqQueue: Get Notification Info
+resQueue <- notification: User Notification Info
+
+sessions <- resQueue: User Notification Info 
+mob <-- sessions: User Notification Info
+
+sessions <- resQueue: User Payment Info 
+mob <-- sessions: User Payment Info
+mob -> mob: Aggregate Results
+
+customer -> mob: Change Profile Info
+mob -> sessions: Change Profile Info
+mob <-- sessions: request received <id=124>
+sessions -> sessions: Update User General Profile Info
+sessions -> userUpdQueue: Update Profile Info
+userUpdQueue -> notification: Update User Notification
+notification -> notification: Update User Notification Settings
+notification -> resQueue: result
+userUpdQueue -> pi: Update User payment
+pi -> pi: Update User payment
+pi -> resQueue: result
+
+sessions <- resQueue: User Notification Info 
+mob <-- sessions: result received <id=124>
+
+sessions <- resQueue: User Payment Info 
+mob <-- sessions: result received <id=124>
+
+mob -> mob: Aggregate Results
+
+@enduml
