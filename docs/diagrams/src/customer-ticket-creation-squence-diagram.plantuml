@@ -1,0 +1,47 @@
+@startuml expert access to tickets
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor customer
+participant "Customer UI" as mob
+participant "Users/sessions" as sessions
+queue "Create Ticket Request" as reqQueue
+participant "Support Plans and subscriptions" as sps
+queue "Ticket Request" as tQueue
+participant "Ticket" as ticket
+queue "Results Queue" as rQueue
+queue "Ticket Created" as tcQueue 
+participant "Expert Profile" as ep
+queue "Ticket Assigned" as taQueue
+queue "notify" as nQueue
+participant "Notification" as notif
+ 
+autoactivate on
+customer -> mob 
+mob -> sessions: authenticate
+mob <-- sessions
+mob -> sessions: Create Ticket Request
+mob <-- sessions: request received <id=123>
+sessions -> reqQueue: Create Ticket Request
+reqQueue -> sps: Create Ticket Request
+sps -> sps: Verify user support plan
+sps --> tQueue: Create Ticket
+ticket <-- tQueue: Create Ticket
+ticket -> ticket: Create ticket
+ticket -> rQueue: Confirmation
+rQueue -> sessions: Resutl received <id=123>
+mob <-- sessions: Resutl received <id=123> 
+
+ticket -> tcQueue: Ticket Created
+tcQueue -> ep: Ticket Created
+
+ep -> ep: Assign Most Suitable Expert
+ep -> taQueue: Expert Assigned
+taQueue -> ticket
+ticket -> ticket: Update Ticket
+taQueue -> nQueue
+nQueue -> notif
+notif -> notif: Send SMS/Email to Expert
+
+@enduml

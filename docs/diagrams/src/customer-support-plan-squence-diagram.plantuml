@@ -1,0 +1,55 @@
+@startuml expert access to tickets
+skinparam shadowing false
+skinparam monochrome true
+hide footbox
+
+actor customer
+participant "Customer UI" as mob
+participant "Users/sessions" as sessions
+queue "Support Plan Request" as reqQueue
+participant "Support Plans and subscriptions" as sup
+queue "Subscription Created/renewed" as subQueue
+participant "Payment informations" as payment
+queue "Payment Request" as queuePayment
+participant "Payments" as payments
+participant "Third Party Payment Service" as tpp
+queue "Results" as resQueue
+queue "Payment results" as paymentResult
+ 
+costomer -> mob 
+mob -> sessions: authenticate
+activate sessions
+mob <-- sessions
+mob -> sessions: list support plans
+mob <-- sessions: request received <id=123>
+sessions -> reqQueue: list support plans
+reqQueue -> sup: list support plans
+activate sup
+sup --> resQueue: support plans
+activate resQueue
+sessions <-- resQueue: resutl received <id=123>
+mob <-- sessions: resutl received <id=123> 
+
+costomer -> mob 
+mob -> sessions: choose support plans
+mob <-- sessions: request received <id=124>
+sessions -> reqQueue: choose support plans
+reqQueue -> sup: choose support plans 
+sup -> subQueue 
+activate subQueue
+subQueue -> payment
+activate payment
+payment -> queuePayment
+activate queuePayment
+queuePayment -> payments
+activate payments
+payments -> tpp: request payment transaction
+activate tpp
+payments <-- tpp: result
+payments -> paymentResult: payment transaction result
+sup <- paymentResult
+sup -> resQueue
+sessions <-- resQueue: resutl received <id=124>
+mob <-- sessions: resutl received <id=124> 
+
+@enduml
